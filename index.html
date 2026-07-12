@@ -62,7 +62,7 @@
                 </div>
             </div>
 
-            <!-- Búsqueda Avanzada -->
+            <!-- Búsqueda Avanzada Dinámica -->
             <div id="panel-avanzada" class="hidden space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -192,33 +192,28 @@
                 </div>
             </div>
 
-            <!-- NUEVO: Información Logística Detallada -->
+            <!-- Información Logística Detallada -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
                     <h3 class="font-bold text-gray-700"><i class="fas fa-clipboard-list mr-2"></i>Información Logística</h3>
                 </div>
                 <div class="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                    <!-- Sucursal -->
                     <div>
                         <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Sucursal</p>
                         <p id="val-sucursal" class="font-medium text-gray-800">-</p>
                     </div>
-                    <!-- Muelle -->
                     <div>
                         <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Muelle</p>
                         <p id="val-muelle" class="font-medium text-gray-800">-</p>
                     </div>
-                    <!-- Transporte -->
                     <div>
                         <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Transporte</p>
                         <p id="val-transporte" class="font-medium text-gray-800">-</p>
                     </div>
-                    <!-- Transportista -->
                     <div>
                         <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Transportista</p>
                         <p id="val-transportista" class="font-medium text-gray-800">-</p>
                     </div>
-                    <!-- Tipo de Material -->
                     <div>
                         <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Tipo de Material</p>
                         <p id="val-material" class="font-medium text-gray-800">-</p>
@@ -254,12 +249,11 @@
         const INTERVALO_REFRESH = 30000; // 30 segundos
         let busquedaActual = { tipo: null, parametro: null };
 
-        // Función Fetch actualizada para Google Apps Script
+        // Función Fetch
         async function fetchSheetData(gid) {
             const url = `${CONFIG.WEB_APP_URL}?gid=${gid}`;
             const response = await fetch(url);
             if (!response.ok) throw new Error("No se pudo contactar con el servidor WMS");
-            
             return await response.json(); 
         }
 
@@ -350,25 +344,45 @@
             try {
                 const entregas = await fetchSheetData(CONFIG.GID_ENTREGAS);
                 
-                // Aplicar filtros
+                // Aplicación robusta de filtros combinados
                 const resultados = entregas.filter(row => {
                     if(!row['Entrega']) return false;
                     
+                    // 1. Filtro de Fecha Dinámico (Maneja formatos con o sin ceros: 09/07/2026 vs 9/7/2026)
                     let cumpleFecha = true;
                     if (fecha) {
                         const [year, month, day] = fecha.split('-');
-                        const fechaFormateada = `${parseInt(day)}/${parseInt(month)}/${year}`;
-                        cumpleFecha = row['Fecha preparada'] === fechaFormateada || row['Fecha estimada a entregar'] === fechaFormateada;
+                        const d1 = parseInt(day, 10).toString(); // Sin cero a la izquierda
+                        const d2 = day;                          // Con cero a la izquierda
+                        const m1 = parseInt(month, 10).toString(); 
+                        const m2 = month;                        
+                        
+                        // Genera todas las variaciones posibles de texto que puedan venir de Google Sheets
+                        const formatosAceptados = [
+                            `${d1}/${m1}/${year}`, 
+                            `${d2}/${m2}/${year}`,
+                            `${d1}/${m2}/${year}`, 
+                            `${d2}/${m1}/${year}`
+                        ];
+                        
+                        const fPrep = (row['Fecha preparada'] || '').trim();
+                        const fEst = (row['Fecha estimada a entregar'] || '').trim();
+                        
+                        cumpleFecha = formatosAceptados.includes(fPrep) || formatosAceptados.includes(fEst);
                     }
                     
+                    // 2. Filtro de Estado
                     const cumpleEstado = estado === "" || (row['Estado actual'] && row['Estado actual'].toUpperCase() === estado.toUpperCase());
+                    
+                    // 3. Filtro de Departamento
                     const cumpleDepto = departamento === "" || (row['Departamento destino'] && row['Departamento destino'].toUpperCase() === departamento.toUpperCase());
                     
+                    // Solo retorna verdadero si CUMPLE TODOS los filtros ingresados
                     return cumpleFecha && cumpleEstado && cumpleDepto;
                 });
 
                 if (resultados.length === 0) {
-                    mostrarError("No se encontraron entregas con los filtros aplicados.");
+                    mostrarError("No se encontraron entregas combinando estos filtros específicos.");
                     return;
                 }
 
@@ -454,15 +468,14 @@
             const estadoActual = (entrega['Estado actual'] || 'DESCONOCIDO').toUpperCase();
             document.getElementById('val-estado').innerText = estadoActual;
             document.getElementById('val-fecha-est').innerText = entrega['Fecha estimada a entregar'] || '-';
-            // Departamento siempre en MAYÚSCULAS
+            
             document.getElementById('val-departamento').innerText = (entrega['Departamento destino'] || '-').toUpperCase();
 
-            // Llenar la nueva Información Logística
+            // Llenar Información Logística
             document.getElementById('val-sucursal').innerText = entrega['Sucursal'] || '-';
             document.getElementById('val-muelle').innerText = entrega['Muelle'] || '-';
             document.getElementById('val-transporte').innerText = entrega['Transporte'] || '-';
             document.getElementById('val-transportista').innerText = entrega['Transportista'] || '-';
-            // Busca TIPO DE MATERIAL asegurando compatibilidad por si varía el uso de mayúsculas en Sheets
             document.getElementById('val-material').innerText = entrega['TIPO DE MATERIAL'] || entrega['Tipo de material'] || entrega['Tipo de Material'] || '-';
 
             // Configurar Colores y Parpadeo de la tarjeta de estado
