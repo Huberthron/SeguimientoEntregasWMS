@@ -161,8 +161,8 @@
                 </div>
             </div>
 
-            <!-- Tarjetas de Información -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Tarjetas de Información Principales -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
                     <div id="icono-estado" class="w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl font-bold bg-gray-400">
                         <i class="fas fa-info"></i>
@@ -192,6 +192,40 @@
                 </div>
             </div>
 
+            <!-- NUEVO: Información Logística Detallada -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                    <h3 class="font-bold text-gray-700"><i class="fas fa-clipboard-list mr-2"></i>Información Logística</h3>
+                </div>
+                <div class="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                    <!-- Sucursal -->
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Sucursal</p>
+                        <p id="val-sucursal" class="font-medium text-gray-800">-</p>
+                    </div>
+                    <!-- Muelle -->
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Muelle</p>
+                        <p id="val-muelle" class="font-medium text-gray-800">-</p>
+                    </div>
+                    <!-- Transporte -->
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Transporte</p>
+                        <p id="val-transporte" class="font-medium text-gray-800">-</p>
+                    </div>
+                    <!-- Transportista -->
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Transportista</p>
+                        <p id="val-transportista" class="font-medium text-gray-800">-</p>
+                    </div>
+                    <!-- Tipo de Material -->
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Tipo de Material</p>
+                        <p id="val-material" class="font-medium text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Historial -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
@@ -208,7 +242,7 @@
     </main>
 
     <script>
-        // NUEVA CONFIGURACIÓN CON APPS SCRIPT
+        // CONFIGURACIÓN CON APPS SCRIPT
         const CONFIG = {
             WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbx76xpbAkMGiDlMr9d4TcXA0F9KMT8AW1vBGkNNXTpv31g9kche1Jfz4h1G3l827a4P/exec',
             GID_ENTREGAS: '0',
@@ -423,6 +457,14 @@
             // Departamento siempre en MAYÚSCULAS
             document.getElementById('val-departamento').innerText = (entrega['Departamento destino'] || '-').toUpperCase();
 
+            // Llenar la nueva Información Logística
+            document.getElementById('val-sucursal').innerText = entrega['Sucursal'] || '-';
+            document.getElementById('val-muelle').innerText = entrega['Muelle'] || '-';
+            document.getElementById('val-transporte').innerText = entrega['Transporte'] || '-';
+            document.getElementById('val-transportista').innerText = entrega['Transportista'] || '-';
+            // Busca TIPO DE MATERIAL asegurando compatibilidad por si varía el uso de mayúsculas en Sheets
+            document.getElementById('val-material').innerText = entrega['TIPO DE MATERIAL'] || entrega['Tipo de material'] || entrega['Tipo de Material'] || '-';
+
             // Configurar Colores y Parpadeo de la tarjeta de estado
             const iconoEstado = document.getElementById('icono-estado');
             iconoEstado.className = "w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md"; 
@@ -459,7 +501,7 @@
             };
             const progress = document.getElementById('stepper-progress');
 
-            // 1. Limpieza total y forzada: establecemos las clases y el HTML inicial limpio sin usar `.replace()`
+            // 1. Limpieza total y forzada
             steps['preparando'].className = "w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl transition-all duration-300";
             steps['preparando'].innerHTML = '<i class="fas fa-box-open text-base"></i>';
 
@@ -490,8 +532,6 @@
             } else if (estadoActual === 'ENTREGADO') {
                 progress.style.width = '100%';
                 progress.className = "absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-green-500 z-0 transition-all duration-500";
-                
-                // Entregado: Conservamos colores de cada etapa pero todos tienen un Check ✓
                 
                 // Preparando completado (Azul)
                 steps['preparando'].className = "w-12 h-12 rounded-full border-4 border-blue-500 bg-blue-500 flex items-center justify-center text-white font-bold text-xl z-10";
@@ -527,7 +567,7 @@
 
                 let obs = mov['Observaciones'];
                 if (!obs || obs.trim() === '') {
-                    obs = `La Entrega ha sido registrada como ${estado}.`;
+                    obs = `El paquete ha sido registrado como ${estado}.`;
                 }
 
                 const esUltimo = index === historial.length - 1;
