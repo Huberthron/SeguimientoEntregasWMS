@@ -239,7 +239,7 @@
     <script>
         // CONFIGURACIÓN CON APPS SCRIPT
         const CONFIG = {
-            WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbx76xpbAkMGiDlMr9d4TcXA0F9KMT8AW1vBGkNNXTpv31g9kche1Jfz4h1G3l827a4P/exec',
+            WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzT_YjqNe4KB4ED-TSS4PHbL4miV5tVqJBK-ZD6_lsxzkeQQDQMDh5yI__JflO8GrKb/exec',
             GID_ENTREGAS: '0',
             GID_HISTORIAL: '1885518349'
         };
@@ -348,7 +348,7 @@
                 const resultados = entregas.filter(row => {
                     if(!row['Entrega']) return false;
                     
-                    // 1. Filtro de Fecha Dinámico (Maneja formatos con o sin ceros: 09/07/2026 vs 9/7/2026)
+                    // 1. Filtro de Fecha Dinámico (Maneja formatos con o sin ceros)
                     let cumpleFecha = true;
                     if (fecha) {
                         const [year, month, day] = fecha.split('-');
@@ -357,7 +357,6 @@
                         const m1 = parseInt(month, 10).toString(); 
                         const m2 = month;                        
                         
-                        // Genera todas las variaciones posibles de texto que puedan venir de Google Sheets
                         const formatosAceptados = [
                             `${d1}/${m1}/${year}`, 
                             `${d2}/${m2}/${year}`,
@@ -448,7 +447,15 @@
                 }
 
                 // Filtrar historial
-                const historial = historialRaw.filter(r => r['Entrega'] === numero);
+                let historial = historialRaw.filter(r => r['Entrega'] === numero);
+
+                // ORDENAR CRONOLÓGICAMENTE: Mapeamos los estados a un peso numérico
+                const ordenEstados = { 'PREPARANDO': 1, 'DESPACHADO': 2, 'EN TRANSITO': 2, 'ENTREGADO': 3 };
+                historial.sort((a, b) => {
+                    const ordenA = ordenEstados[(a['Estado'] || '').toUpperCase()] || 99;
+                    const ordenB = ordenEstados[(b['Estado'] || '').toUpperCase()] || 99;
+                    return ordenA - ordenB;
+                });
 
                 renderDetalle(entrega, historial);
                 actualizarHoraIndicador('indicador-actualizacion-detalle');
