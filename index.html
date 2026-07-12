@@ -76,9 +76,6 @@
                             <option value="PREPARANDO">PREPARANDO</option>
                             <option value="DESPACHADO">DESPACHADO</option>
                             <option value="ENTREGADO">ENTREGADO</option>
-                            <option value="CANCELADO">CANCELADO</option>
-                            <option value="DEVUELTO">DEVUELTO</option>
-                            <option value="EN TRANSITO">EN TRANSITO</option>
                         </select>
                     </div>
                     <div>
@@ -180,7 +177,7 @@
                         <i class="far fa-calendar-alt"></i>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 uppercase font-semibold">Fecha Estimada</p>
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Fecha Estimada a Entregar</p>
                         <p id="val-fecha-est" class="text-lg font-bold text-gray-800">-</p>
                     </div>
                 </div>
@@ -221,9 +218,9 @@
         // SISTEMA DE AUTO-ACTUALIZACIÓN
         let autoRefreshTimer = null;
         const INTERVALO_REFRESH = 30000; // 30 segundos
-        let busquedaActual = { tipo: null, parametro: null }; // Guarda la última búsqueda
+        let busquedaActual = { tipo: null, parametro: null };
 
-        // Función Fetch actualizada para Google Apps Script (JSON directo)
+        // Función Fetch actualizada para Google Apps Script
         async function fetchSheetData(gid) {
             const url = `${CONFIG.WEB_APP_URL}?gid=${gid}`;
             const response = await fetch(url);
@@ -285,7 +282,7 @@
             if(autoRefreshTimer) clearInterval(autoRefreshTimer);
             autoRefreshTimer = setInterval(() => {
                 if(busquedaActual.tipo === 'directa') {
-                    buscarEntrega(busquedaActual.parametro, true); // true = es actualización silenciosa
+                    buscarEntrega(busquedaActual.parametro, true); 
                 } else if(busquedaActual.tipo === 'avanzada') {
                     ejecutarBusquedaAvanzada(true);
                 }
@@ -428,7 +425,7 @@
 
             // Configurar Colores y Parpadeo de la tarjeta de estado
             const iconoEstado = document.getElementById('icono-estado');
-            iconoEstado.className = "w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md"; // Reset
+            iconoEstado.className = "w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md"; 
             
             let colorClase = 'bg-gray-500';
             let iconoClase = 'fa-info';
@@ -462,23 +459,29 @@
             };
             const progress = document.getElementById('stepper-progress');
 
-            // Resetear estilos
-            Object.values(steps).forEach(step => {
-                step.className = "w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl transition-all duration-300";
-                step.innerHTML = step.innerHTML.replace('fa-check', step.dataset.icon || ''); 
-            });
+            // 1. Limpieza total y forzada: establecemos las clases y el HTML inicial limpio sin usar `.replace()`
+            steps['preparando'].className = "w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl transition-all duration-300";
+            steps['preparando'].innerHTML = '<i class="fas fa-box-open text-base"></i>';
 
-            // Lógica de llenado de progreso
+            steps['despachado'].className = "w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl transition-all duration-300";
+            steps['despachado'].innerHTML = '<i class="fas fa-truck text-base"></i>';
+
+            steps['entregado'].className = "w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl transition-all duration-300";
+            steps['entregado'].innerHTML = '<i class="fas fa-check-double text-base"></i>';
+
+            // 2. Lógica de llenado de progreso
             if (estadoActual === 'PREPARANDO') {
                 progress.style.width = '0%';
+                progress.className = "absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-blue-500 z-0 transition-all duration-500";
+                
                 steps['preparando'].className = "w-14 h-14 rounded-full border-4 border-blue-200 bg-blue-500 flex items-center justify-center text-white font-bold text-2xl blink-preparando z-10 shadow-lg";
             
             } else if (estadoActual === 'DESPACHADO' || estadoActual === 'EN TRANSITO') {
                 progress.style.width = '50%';
+                progress.className = "absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-blue-500 z-0 transition-all duration-500";
                 
                 // Preparando completado
                 steps['preparando'].className = "w-12 h-12 rounded-full border-4 border-blue-500 bg-blue-500 flex items-center justify-center text-white font-bold text-xl z-10";
-                steps['preparando'].dataset.icon = steps['preparando'].innerHTML; // Guardar icono viejo
                 steps['preparando'].innerHTML = '<i class="fas fa-check"></i>';
                 
                 // Despachado actual
@@ -486,17 +489,21 @@
             
             } else if (estadoActual === 'ENTREGADO') {
                 progress.style.width = '100%';
-                progress.classList.replace('bg-blue-500', 'bg-green-500');
+                progress.className = "absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-green-500 z-0 transition-all duration-500";
                 
-                // Preparando y Despachado completados
-                ['preparando', 'despachado'].forEach(s => {
-                    steps[s].className = "w-12 h-12 rounded-full border-4 border-green-500 bg-green-500 flex items-center justify-center text-white font-bold text-xl z-10";
-                    steps[s].dataset.icon = steps[s].innerHTML;
-                    steps[s].innerHTML = '<i class="fas fa-check"></i>';
-                });
+                // Entregado: Conservamos colores de cada etapa pero todos tienen un Check ✓
                 
-                // Entregado actual (SIN PARPADEO)
+                // Preparando completado (Azul)
+                steps['preparando'].className = "w-12 h-12 rounded-full border-4 border-blue-500 bg-blue-500 flex items-center justify-center text-white font-bold text-xl z-10";
+                steps['preparando'].innerHTML = '<i class="fas fa-check"></i>';
+
+                // Despachado completado (Naranja)
+                steps['despachado'].className = "w-12 h-12 rounded-full border-4 border-orange-500 bg-orange-500 flex items-center justify-center text-white font-bold text-xl z-10";
+                steps['despachado'].innerHTML = '<i class="fas fa-check"></i>';
+                
+                // Entregado actual (Verde) - Sin parpadeo
                 steps['entregado'].className = "w-14 h-14 rounded-full border-4 border-green-200 bg-green-500 flex items-center justify-center text-white font-bold text-2xl z-10 shadow-lg";
+                steps['entregado'].innerHTML = '<i class="fas fa-check"></i>';
             }
         }
 
@@ -520,7 +527,7 @@
 
                 let obs = mov['Observaciones'];
                 if (!obs || obs.trim() === '') {
-                    obs = `El paquete ha sido registrado como ${estado}.`;
+                    obs = `La Entrega ha sido registrada como ${estado}.`;
                 }
 
                 const esUltimo = index === historial.length - 1;
