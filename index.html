@@ -211,9 +211,9 @@
     </main>
 
     <script>
-        // CONFIGURACIÓN DE GOOGLE SHEETS
+        // NUEVA CONFIGURACIÓN CON APPS SCRIPT
         const CONFIG = {
-            SHEET_ID: '1bWwJi_mju1gighVD52bPH34DkPtV066bc75Tg52uv-0',
+            WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbx76xpbAkMGiDlMr9d4TcXA0F9KMT8AW1vBGkNNXTpv31g9kche1Jfz4h1G3l827a4P/exec',
             GID_ENTREGAS: '0',
             GID_HISTORIAL: '1885518349'
         };
@@ -223,35 +223,13 @@
         const INTERVALO_REFRESH = 30000; // 30 segundos
         let busquedaActual = { tipo: null, parametro: null }; // Guarda la última búsqueda
 
-        // Generar URL para evitar errores CORS en Edge/Brave
-        function getCsvUrl(gid) {
-            return `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`;
-        }
-
-        // Parseador ligero de CSV
-        function csvJSON(csv) {
-            const lines = csv.split('\n');
-            const result = [];
-            if(lines.length === 0 || !lines[0]) return result;
-            const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
-            for (let i = 1; i < lines.length; i++) {
-                if(!lines[i].trim()) continue;
-                const obj = {};
-                const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                for (let j = 0; j < headers.length; j++) {
-                    obj[headers[j]] = currentline[j] ? currentline[j].replace(/^"|"$/g, '').trim() : '';
-                }
-                result.push(obj);
-            }
-            return result;
-        }
-
+        // Función Fetch actualizada para Google Apps Script (JSON directo)
         async function fetchSheetData(gid) {
-            const url = getCsvUrl(gid);
+            const url = `${CONFIG.WEB_APP_URL}?gid=${gid}`;
             const response = await fetch(url);
-            if (!response.ok) throw new Error("No se pudo contactar con Google Sheets");
-            const text = await response.text();
-            return csvJSON(text);
+            if (!response.ok) throw new Error("No se pudo contactar con el servidor WMS");
+            
+            return await response.json(); 
         }
 
         // Cargar Departamentos para el filtro al iniciar
