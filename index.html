@@ -7,42 +7,31 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Animaciones de parpadeo */
-        @keyframes pulse-blue {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
-        @keyframes pulse-orange {
-            0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(249, 115, 22, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
-        }
+        @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+        @keyframes pulse-orange { 0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(249, 115, 22, 0); } 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); } }
         .blink-preparando { animation: pulse-blue 2s infinite; }
         .blink-despachado { animation: pulse-orange 2s infinite; }
-        
-        /* Ocultar elementos */
         .hidden { display: none !important; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans text-gray-800">
 
-    <!-- Header con Logo de la Empresa -->
-    <header class="bg-slate-800 text-white shadow-md py-6">
-        <div class="max-w-5xl mx-auto px-4 flex flex-col items-center text-center">
-            <!-- Logo integrado -->
-            <img src="logo chavez  - blanco.png" alt="Logo de la Empresa" class="h-16 mb-4 object-contain">
+    <header class="bg-slate-800 text-white shadow-md py-6 relative">
+        <div class="max-w-5xl mx-auto px-4 flex flex-col items-center text-center relative">
+            <img src="logo chavez  - blanco.png" alt="Logo de la Empresa" class="h-16 mb-4 object-contain" onerror="this.style.display='none'">
             <h1 class="text-3xl font-bold tracking-tight">SEGUIMIENTO DE ENTREGAS WMS</h1>
             <p class="text-slate-300 mt-2 text-sm">Control y Rastreo de Entregas Logísticas en Tiempo Real</p>
+            
+            <!-- BOTÓN SECRETO PARA ACTIVAR MODO EDICIÓN -->
+            <button onclick="toggleAdmin()" class="absolute right-4 top-4 text-slate-600 hover:text-slate-300 transition text-xl" title="Acceso a Operadores">
+                <i class="fas fa-lock" id="icono-admin"></i>
+            </button>
         </div>
     </header>
 
     <main class="max-w-5xl mx-auto px-4 py-8">
-        
-        <!-- Panel de Búsqueda y Filtros -->
+        <!-- Panel de Búsqueda -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-            
-            <!-- Tabs -->
             <div class="flex border-b border-gray-200 mb-6">
                 <button id="tab-directa" class="flex-1 py-3 text-center font-medium text-blue-600 border-b-2 border-blue-600" onclick="switchTab('directa')">
                     <i class="fas fa-search mr-2"></i> N° de Entrega
@@ -52,17 +41,15 @@
                 </button>
             </div>
 
-            <!-- Búsqueda Directa -->
             <div id="panel-directa" class="space-y-4">
                 <div class="flex gap-4">
-                    <input type="text" id="input-entrega" placeholder="Ej. 577119" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" onkeypress="if(event.key === 'Enter') ejecutarBusquedaDirecta()">
+                    <input type="text" id="input-entrega" placeholder="Ej. 577119" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" onkeypress="if(event.key === 'Enter') ejecutarBusquedaDirecta()">
                     <button onclick="ejecutarBusquedaDirecta()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition flex items-center gap-2">
                         <i class="fas fa-search"></i> Buscar
                     </button>
                 </div>
             </div>
 
-            <!-- Búsqueda Avanzada Dinámica -->
             <div id="panel-avanzada" class="hidden space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -91,10 +78,10 @@
             </div>
         </div>
 
-        <!-- Mensajes de Carga y Error -->
+        <!-- Carga y Error -->
         <div id="loading" class="hidden text-center py-10">
             <i class="fas fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
-            <p class="text-gray-500">Conectando con el WMS...</p>
+            <p class="text-gray-500">Buscando información de entrega...</p>
         </div>
         <div id="error-msg" class="hidden bg-red-100 text-red-700 p-4 rounded-lg mb-6 border border-red-200"></div>
 
@@ -102,7 +89,6 @@
         <div id="lista-resultados" class="hidden bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
             <div class="p-4 bg-slate-50 border-b border-gray-200 font-medium text-gray-700 flex justify-between items-center">
                 <span>Resultados Encontrados</span>
-                <span id="indicador-actualizacion-lista" class="text-xs text-gray-400 font-normal"></span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -120,84 +106,102 @@
             </div>
         </div>
 
-        <!-- Resultados: Detalle de Entrega -->
+        <!-- Resultados: Detalle -->
         <div id="detalle-entrega" class="hidden">
             <div class="flex justify-between items-end mb-4">
                 <h2 class="text-2xl font-bold text-slate-800">Detalles de Entrega: <span id="lbl-entrega" class="text-blue-600"></span></h2>
                 <span id="indicador-actualizacion-detalle" class="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded"></span>
             </div>
             
-            <!-- Stepper (Línea de tiempo) -->
+            <!-- Stepper -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-6">
                 <div class="relative flex justify-between items-center w-full max-w-3xl mx-auto">
-                    <!-- Linea de fondo -->
                     <div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-200 z-0"></div>
-                    <!-- Linea de progreso dinámica -->
                     <div id="stepper-progress" class="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-blue-500 z-0 transition-all duration-500" style="width: 0%;"></div>
                     
-                    <!-- Paso 1: Preparando -->
                     <div class="relative z-10 flex flex-col items-center bg-white px-2">
-                        <div id="step-preparando" class="w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl transition-colors">
-                            <i class="fas fa-box-open text-base"></i>
-                        </div>
+                        <div id="step-preparando" class="w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl"><i class="fas fa-box-open text-base"></i></div>
                         <span class="text-xs font-semibold mt-2 text-gray-500">PREPARANDO</span>
                     </div>
-                    
-                    <!-- Paso 2: Despachado -->
                     <div class="relative z-10 flex flex-col items-center bg-white px-2">
-                        <div id="step-despachado" class="w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl transition-colors">
-                            <i class="fas fa-truck text-base"></i>
-                        </div>
+                        <div id="step-despachado" class="w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl"><i class="fas fa-truck text-base"></i></div>
                         <span class="text-xs font-semibold mt-2 text-gray-500">DESPACHADO</span>
                     </div>
-
-                    <!-- Paso 3: Entregado -->
                     <div class="relative z-10 flex flex-col items-center bg-white px-2">
-                        <div id="step-entregado" class="w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl transition-colors">
-                            <i class="fas fa-check-double text-base"></i>
-                        </div>
+                        <div id="step-entregado" class="w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl"><i class="fas fa-check-double text-base"></i></div>
                         <span class="text-xs font-semibold mt-2 text-gray-500">ENTREGADO</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Tarjetas de Información Principales -->
+            <!-- PANEL DE EDICIÓN OCULTO POR DEFECTO PARA USUARIOS NORMALES -->
+            <div id="panel-edicion" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6 shadow-sm">
+                <h3 class="font-bold text-blue-800 mb-4 flex items-center"><i class="fas fa-edit mr-2"></i> Panel de Operador: Actualizar Entrega</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 mb-1">Estado actual</label>
+                        <select id="update-estado" class="w-full px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="PREPARANDO">PREPARANDO</option>
+                            <option value="DESPACHADO">DESPACHADO</option>
+                            <option value="ENTREGADO">ENTREGADO</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 mb-1">N° Guia</label>
+                        <input type="text" id="update-guia" class="w-full px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-blue-900 mb-1">N° Traspaso</label>
+                        <input type="text" id="update-traspaso" class="w-full px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button id="btn-actualizar" onclick="guardarActualizacion()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition flex items-center gap-2">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tarjetas Resumen -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div id="icono-estado" class="w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl font-bold bg-gray-400">
-                        <i class="fas fa-info"></i>
-                    </div>
+                    <div id="icono-estado" class="w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl font-bold bg-gray-400"><i class="fas fa-info"></i></div>
                     <div>
                         <p class="text-xs text-gray-500 uppercase font-semibold">Estado Actual</p>
                         <p id="val-estado" class="text-lg font-bold text-gray-800">-</p>
                     </div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-xl">
-                        <i class="far fa-calendar-alt"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-semibold">Fecha Estimada a Entregar</p>
-                        <p id="val-fecha-est" class="text-lg font-bold text-gray-800">-</p>
+                    <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-xl"><i class="far fa-calendar-alt"></i></div>
+                    <div class="flex flex-col">
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Fechas de Movimiento</p>
+                        <p class="text-sm font-bold text-gray-800">Prep: <span id="val-fecha-prep" class="font-normal">-</span></p>
+                        <p class="text-sm font-bold text-gray-800">Desp: <span id="val-fecha-desp" class="font-normal">-</span></p>
                     </div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-xl">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </div>
+                    <div class="w-12 h-12 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-xl"><i class="fas fa-map-marker-alt"></i></div>
                     <div>
-                        <p class="text-xs text-gray-500 uppercase font-semibold">Departamento</p>
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Departamento destino</p>
                         <p id="val-departamento" class="text-lg font-bold text-gray-800">-</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Información Logística Detallada -->
+            <!-- Información Logística -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
                     <h3 class="font-bold text-gray-700"><i class="fas fa-clipboard-list mr-2"></i>Información Logística</h3>
                 </div>
-                <div class="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                <div class="p-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">N° Guia</p>
+                        <p id="val-guia" class="font-bold text-blue-600">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">N° Traspaso</p>
+                        <p id="val-traspaso" class="font-bold text-purple-600">-</p>
+                    </div>
                     <div>
                         <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Sucursal</p>
                         <p id="val-sucursal" class="font-medium text-gray-800">-</p>
@@ -215,75 +219,85 @@
                         <p id="val-transportista" class="font-medium text-gray-800">-</p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Tipo de Material</p>
+                        <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Material</p>
                         <p id="val-material" class="font-medium text-gray-800">-</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Historial -->
+            <!-- Historial Autogenerado -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
                     <h3 class="font-bold text-gray-700"><i class="fas fa-history mr-2"></i>Historial de Movimientos</h3>
                 </div>
-                <div class="p-6">
-                    <div id="timeline-historial" class="relative border-l-2 border-gray-200 ml-3 space-y-6">
-                        <!-- El historial se inyecta aquí con JS -->
-                    </div>
-                </div>
+                <div class="p-6"><div id="timeline-historial" class="relative border-l-2 border-gray-200 ml-3 space-y-6"></div></div>
             </div>
         </div>
-
     </main>
 
     <script>
-        // CONFIGURACIÓN CON APPS SCRIPT
+        // CONFIGURACIÓN
         const CONFIG = {
             WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzT_YjqNe4KB4ED-TSS4PHbL4miV5tVqJBK-ZD6_lsxzkeQQDQMDh5yI__JflO8GrKb/exec',
-            GID_ENTREGAS: '0',
-            GID_HISTORIAL: '1885518349'
+            GID_ENTREGAS: '0' 
+            // Ya no necesitamos GID_HISTORIAL porque lo generaremos automáticamente
         };
 
-        // SISTEMA DE AUTO-ACTUALIZACIÓN
         let autoRefreshTimer = null;
-        const INTERVALO_REFRESH = 30000; // 30 segundos
         let busquedaActual = { tipo: null, parametro: null };
+        let modoAdmin = false;
 
-        // Función Fetch
+        // Función para activar/desactivar panel de operarios
+        function toggleAdmin() {
+            modoAdmin = !modoAdmin;
+            const panel = document.getElementById('panel-edicion');
+            const icono = document.getElementById('icono-admin');
+            
+            if (modoAdmin) {
+                panel.classList.remove('hidden');
+                icono.classList.remove('fa-lock');
+                icono.classList.add('fa-unlock', 'text-white');
+            } else {
+                panel.classList.add('hidden');
+                icono.classList.add('fa-lock');
+                icono.classList.remove('fa-unlock', 'text-white');
+            }
+        }
+
+        // Formateador de fechas para que se vean bonitas
+        function formatearFechaElegante(cadenaFecha) {
+            if (!cadenaFecha) return 'Sin fecha registrada';
+            try {
+                const fecha = new Date(cadenaFecha);
+                return fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) + 
+                       ' - ' + fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            } catch(e) {
+                return cadenaFecha;
+            }
+        }
+
         async function fetchSheetData(gid) {
-            const url = `${CONFIG.WEB_APP_URL}?gid=${gid}`;
-            const response = await fetch(url);
-            if (!response.ok) throw new Error("No se pudo contactar con el servidor WMS");
+            const response = await fetch(`${CONFIG.WEB_APP_URL}?gid=${gid}`);
+            if (!response.ok) throw new Error("Error con el servidor");
             return await response.json(); 
         }
 
-        // Cargar Departamentos para el filtro al iniciar
         async function initApp() {
             try {
                 const entregas = await fetchSheetData(CONFIG.GID_ENTREGAS);
-                const departamentos = [...new Set(entregas.map(e => (e['Departamento destino'] || '').trim().toUpperCase()).filter(e => e !== ''))];
+                const deptos = [...new Set(entregas.map(e => (e['Departamento destino'] || '').trim().toUpperCase()).filter(e => e !== ''))];
                 const selectDept = document.getElementById('filtro-departamento');
-                selectDept.innerHTML = '<option value="">Todos los departamentos</option>';
-                departamentos.forEach(dept => {
-                    selectDept.innerHTML += `<option value="${dept}">${dept}</option>`;
-                });
-            } catch (error) {
-                console.error("Error al cargar departamentos:", error);
-            }
+                deptos.forEach(d => selectDept.innerHTML += `<option value="${d}">${d}</option>`);
+            } catch (e) {}
         }
         initApp();
 
-        // UI Helpers
         function switchTab(tab) {
-            document.getElementById('tab-directa').classList.remove('text-blue-600', 'border-blue-600');
-            document.getElementById('tab-directa').classList.add('text-gray-500');
-            document.getElementById('tab-avanzada').classList.remove('text-blue-600', 'border-blue-600');
-            document.getElementById('tab-avanzada').classList.add('text-gray-500');
             document.getElementById('panel-directa').classList.add('hidden');
             document.getElementById('panel-avanzada').classList.add('hidden');
-
-            document.getElementById('tab-' + tab).classList.remove('text-gray-500');
-            document.getElementById('tab-' + tab).classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+            document.getElementById('tab-directa').className = "flex-1 py-3 text-center font-medium text-gray-500";
+            document.getElementById('tab-avanzada').className = "flex-1 py-3 text-center font-medium text-gray-500";
+            document.getElementById('tab-' + tab).className = "flex-1 py-3 text-center font-medium text-blue-600 border-b-2 border-blue-600";
             document.getElementById('panel-' + tab).classList.remove('hidden');
         }
 
@@ -292,32 +306,21 @@
             if(mostrar) document.getElementById('error-msg').classList.add('hidden');
         }
 
-        function mostrarError(mensaje) {
-            const errDiv = document.getElementById('error-msg');
-            errDiv.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i> ${mensaje}`;
-            errDiv.classList.remove('hidden');
+        function mostrarError(msg) {
+            document.getElementById('error-msg').innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i> ${msg}`;
+            document.getElementById('error-msg').classList.remove('hidden');
             document.getElementById('detalle-entrega').classList.add('hidden');
             document.getElementById('lista-resultados').classList.add('hidden');
-        }
-
-        function actualizarHoraIndicador(elementoId) {
-            const ahora = new Date();
-            const hora = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second:'2-digit' });
-            document.getElementById(elementoId).innerText = `Actualizado: ${hora}`;
         }
 
         function iniciarAutoRefresh() {
             if(autoRefreshTimer) clearInterval(autoRefreshTimer);
             autoRefreshTimer = setInterval(() => {
-                if(busquedaActual.tipo === 'directa') {
-                    buscarEntrega(busquedaActual.parametro, true); 
-                } else if(busquedaActual.tipo === 'avanzada') {
-                    ejecutarBusquedaAvanzada(true);
-                }
-            }, INTERVALO_REFRESH);
+                if(busquedaActual.tipo === 'directa') buscarEntrega(busquedaActual.parametro, true); 
+                else if(busquedaActual.tipo === 'avanzada') ejecutarBusquedaAvanzada(true);
+            }, 30000);
         }
 
-        // Búsqueda Directa
         function ejecutarBusquedaDirecta() {
             const numero = document.getElementById('input-entrega').value.trim();
             if (!numero) return;
@@ -326,289 +329,215 @@
             iniciarAutoRefresh();
         }
 
-        // Búsqueda Avanzada
         async function ejecutarBusquedaAvanzada(esSilencioso = false) {
             const fecha = document.getElementById('filtro-fecha').value;
             const estado = document.getElementById('filtro-estado').value;
-            const departamento = document.getElementById('filtro-departamento').value;
+            const depto = document.getElementById('filtro-departamento').value;
 
-            if(!esSilencioso) {
-                mostrarCarga(true);
-                document.getElementById('detalle-entrega').classList.add('hidden');
-                document.getElementById('lista-resultados').classList.add('hidden');
-            }
+            if(!esSilencioso) { mostrarCarga(true); document.getElementById('detalle-entrega').classList.add('hidden'); }
             
-            busquedaActual = { tipo: 'avanzada', parametro: null };
-            if(!esSilencioso) iniciarAutoRefresh();
-
             try {
                 const entregas = await fetchSheetData(CONFIG.GID_ENTREGAS);
-                
-                // Aplicación robusta de filtros combinados
                 const resultados = entregas.filter(row => {
                     if(!row['Entrega']) return false;
-                    
-                    // 1. Filtro de Fecha Dinámico (Maneja formatos con o sin ceros)
-                    let cumpleFecha = true;
+                    let cumpleF = true;
                     if (fecha) {
-                        const [year, month, day] = fecha.split('-');
-                        const d1 = parseInt(day, 10).toString(); // Sin cero a la izquierda
-                        const d2 = day;                          // Con cero a la izquierda
-                        const m1 = parseInt(month, 10).toString(); 
-                        const m2 = month;                        
-                        
-                        const formatosAceptados = [
-                            `${d1}/${m1}/${year}`, 
-                            `${d2}/${m2}/${year}`,
-                            `${d1}/${m2}/${year}`, 
-                            `${d2}/${m1}/${year}`
-                        ];
-                        
-                        const fPrep = (row['Fecha preparada'] || '').trim();
-                        const fEst = (row['Fecha estimada a entregar'] || '').trim();
-                        
-                        cumpleFecha = formatosAceptados.includes(fPrep) || formatosAceptados.includes(fEst);
+                        const [y, m, d] = fecha.split('-');
+                        const d1 = parseInt(d, 10).toString(); const m1 = parseInt(m, 10).toString();
+                        const fmt = [`${d1}/${m1}/${y}`, `${d}/${m}/${y}`, `${d1}/${m}/${y}`, `${d}/${m1}/${y}`];
+                        const fPrep = (row['Fecha preparado'] || '').trim();
+                        const fDesp = (row['Fecha Despachado'] || '').trim();
+                        cumpleF = fmt.includes(fPrep) || fmt.includes(fDesp);
                     }
-                    
-                    // 2. Filtro de Estado
-                    const cumpleEstado = estado === "" || (row['Estado actual'] && row['Estado actual'].toUpperCase() === estado.toUpperCase());
-                    
-                    // 3. Filtro de Departamento
-                    const cumpleDepto = departamento === "" || (row['Departamento destino'] && row['Departamento destino'].toUpperCase() === departamento.toUpperCase());
-                    
-                    // Solo retorna verdadero si CUMPLE TODOS los filtros ingresados
-                    return cumpleFecha && cumpleEstado && cumpleDepto;
+                    const cumpleEst = estado === "" || (row['Estado actual']||'').toUpperCase() === estado.toUpperCase();
+                    const cumpleDep = depto === "" || (row['Departamento destino']||'').toUpperCase() === depto.toUpperCase();
+                    return cumpleF && cumpleEst && cumpleDep;
                 });
 
-                if (resultados.length === 0) {
-                    mostrarError("No se encontraron entregas combinando estos filtros específicos.");
-                    return;
-                }
+                if (resultados.length === 0) { if(!esSilencioso) mostrarError("No hay resultados."); return; }
+                
+                const tbody = document.getElementById('tabla-resultados-body');
+                tbody.innerHTML = '';
+                resultados.forEach(r => {
+                    const est = (r['Estado actual'] || '').toUpperCase();
+                    let cEst = 'bg-gray-100 text-gray-700';
+                    if(est === 'PREPARANDO') cEst = 'bg-blue-100 text-blue-700';
+                    if(est === 'DESPACHADO' || est === 'EN TRANSITO') cEst = 'bg-orange-100 text-orange-700';
+                    if(est === 'ENTREGADO') cEst = 'bg-green-100 text-green-700';
 
-                renderListaResultados(resultados);
-                actualizarHoraIndicador('indicador-actualizacion-lista');
-
-            } catch (error) {
-                if(!esSilencioso) mostrarError(`Error al aplicar filtros: ${error.message}`);
-                console.error(error);
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b hover:bg-blue-50 cursor-pointer";
+                    tr.onclick = () => { document.getElementById('input-entrega').value = r['Entrega']; ejecutarBusquedaDirecta(); };
+                    tr.innerHTML = `
+                        <td class="p-4 font-medium">${r['Entrega']}</td>
+                        <td class="p-4 text-sm">${r['Sucursal'] || '-'}</td>
+                        <td class="p-4"><span class="px-2 py-1 rounded-full text-xs font-bold ${cEst}">${est}</span></td>
+                        <td class="p-4 text-sm">${(r['Departamento destino']||'').toUpperCase()}</td>
+                        <td class="p-4"><i class="fas fa-chevron-right text-blue-600"></i></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                document.getElementById('lista-resultados').classList.remove('hidden');
+            } catch (e) {
+                if(!esSilencioso) mostrarError("Error en filtros");
             } finally {
                 if(!esSilencioso) mostrarCarga(false);
             }
         }
 
-        function renderListaResultados(resultados) {
-            const tbody = document.getElementById('tabla-resultados-body');
-            tbody.innerHTML = '';
-            resultados.forEach(row => {
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-gray-100 hover:bg-blue-50 transition cursor-pointer";
-                tr.onclick = () => {
-                    document.getElementById('input-entrega').value = row['Entrega'];
-                    ejecutarBusquedaDirecta();
-                };
-                
-                let colorEstado = 'bg-gray-100 text-gray-700';
-                const est = (row['Estado actual'] || '').toUpperCase();
-                if(est === 'PREPARANDO') colorEstado = 'bg-blue-100 text-blue-700';
-                if(est === 'DESPACHADO' || est === 'EN TRANSITO') colorEstado = 'bg-orange-100 text-orange-700';
-                if(est === 'ENTREGADO') colorEstado = 'bg-green-100 text-green-700';
-
-                tr.innerHTML = `
-                    <td class="p-4 font-medium text-gray-800">${row['Entrega']}</td>
-                    <td class="p-4 text-sm text-gray-600">${row['Sucursal'] || '-'}</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded-full text-xs font-bold ${colorEstado}">${est}</span></td>
-                    <td class="p-4 text-sm text-gray-600">${(row['Departamento destino']||'').toUpperCase()}</td>
-                    <td class="p-4"><button class="text-blue-600 hover:text-blue-800"><i class="fas fa-chevron-right"></i></button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-            document.getElementById('lista-resultados').classList.remove('hidden');
-        }
-
-        // Lógica Principal de un N° de Entrega
         async function buscarEntrega(numero, esSilencioso = false) {
-            if(!esSilencioso) {
-                mostrarCarga(true);
-                document.getElementById('lista-resultados').classList.add('hidden');
-            }
-
+            if(!esSilencioso) { mostrarCarga(true); document.getElementById('lista-resultados').classList.add('hidden'); }
             try {
-                // Fetch paralelo para mayor velocidad
-                const [entregas, historialRaw] = await Promise.all([
-                    fetchSheetData(CONFIG.GID_ENTREGAS),
-                    fetchSheetData(CONFIG.GID_HISTORIAL)
-                ]);
+                const entregas = await fetchSheetData(CONFIG.GID_ENTREGAS);
+                const entrega = entregas.find(r => r['Entrega'] == numero);
+                if (!entrega) { if(!esSilencioso) mostrarError(`No se encontró entrega ${numero}`); return; }
 
-                const entrega = entregas.find(r => r['Entrega'] === numero);
+                const estadoActual = (entrega['Estado actual'] || 'DESCONOCIDO').toUpperCase();
+                document.getElementById('lbl-entrega').innerText = entrega['Entrega'];
+                document.getElementById('val-estado').innerText = estadoActual;
+                document.getElementById('val-fecha-prep').innerText = entrega['Fecha preparado'] ? entrega['Fecha preparado'].split('T')[0] : '-';
+                document.getElementById('val-fecha-desp').innerText = entrega['Fecha Despachado'] ? entrega['Fecha Despachado'].split('T')[0] : '-';
+                document.getElementById('val-departamento').innerText = (entrega['Departamento destino'] || '-').toUpperCase();
+                
+                document.getElementById('val-guia').innerText = entrega['N° Guia'] || '-';
+                document.getElementById('val-traspaso').innerText = entrega['N° Traspaso'] || '-';
+                document.getElementById('val-sucursal').innerText = entrega['Sucursal'] || '-';
+                document.getElementById('val-muelle').innerText = entrega['Muelle'] || '-';
+                document.getElementById('val-transporte').innerText = entrega['Transporte'] || '-';
+                document.getElementById('val-transportista').innerText = entrega['Transportista'] || '-';
+                document.getElementById('val-material').innerText = entrega['Tipo de Material'] || '-';
 
-                if (!entrega) {
-                    mostrarError(`No se encontró la entrega N° ${numero}`);
-                    return;
+                // Llenar inputs de edición (Solo visibles si se presiona el candado)
+                document.getElementById('update-estado').value = ['PREPARANDO','DESPACHADO','ENTREGADO'].includes(estadoActual) ? estadoActual : 'PREPARANDO';
+                document.getElementById('update-guia').value = entrega['N° Guia'] || '';
+                document.getElementById('update-traspaso').value = entrega['N° Traspaso'] || '';
+
+                // UI Iconos y Stepper
+                const iconoEstado = document.getElementById('icono-estado');
+                let colorClase = 'bg-gray-500'; let iconoClase = 'fa-info';
+                if (estadoActual === 'PREPARANDO') { colorClase = 'bg-blue-500 blink-preparando'; iconoClase = 'fa-box-open'; } 
+                else if (estadoActual === 'DESPACHADO' || estadoActual === 'EN TRANSITO') { colorClase = 'bg-orange-500 blink-despachado'; iconoClase = 'fa-truck'; } 
+                else if (estadoActual === 'ENTREGADO') { colorClase = 'bg-green-500'; iconoClase = 'fa-check-double'; } 
+                
+                iconoEstado.className = `w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md ${colorClase}`;
+                iconoEstado.innerHTML = `<i class="fas ${iconoClase}"></i>`;
+
+                actualizarStepper(estadoActual);
+
+                // ==========================================
+                // GENERACIÓN AUTOMÁTICA DEL HISTORIAL
+                // ==========================================
+                let historialGenerado = [];
+                
+                // 1. Siempre mostrar "PREPARANDO" si hay fecha o si el estado ya avanzó
+                if (entrega['Fecha preparado'] || estadoActual === 'PREPARANDO' || estadoActual === 'DESPACHADO' || estadoActual === 'ENTREGADO') {
+                    historialGenerado.push({
+                        'Estado': 'PREPARANDO',
+                        'Fecha': formatearFechaElegante(entrega['Fecha preparado']),
+                        'Observaciones': 'El paquete se encuentra en proceso de preparación en: ' + (entrega['Sucursal'] || 'Almacén')
+                    });
                 }
 
-                // Filtrar historial
-                let historial = historialRaw.filter(r => r['Entrega'] === numero);
+                // 2. Mostrar "DESPACHADO"
+                if (entrega['Fecha Despachado'] || estadoActual === 'DESPACHADO' || estadoActual === 'ENTREGADO') {
+                    historialGenerado.push({
+                        'Estado': 'DESPACHADO',
+                        'Fecha': formatearFechaElegante(entrega['Fecha Despachado']),
+                        'Observaciones': 'El pedido fue despachado y entregado al transportista: ' + (entrega['Transportista'] || 'Asignado')
+                    });
+                }
 
-                // ORDENAR CRONOLÓGICAMENTE: Mapeamos los estados a un peso numérico
-                const ordenEstados = { 'PREPARANDO': 1, 'DESPACHADO': 2, 'EN TRANSITO': 2, 'ENTREGADO': 3 };
-                historial.sort((a, b) => {
-                    const ordenA = ordenEstados[(a['Estado'] || '').toUpperCase()] || 99;
-                    const ordenB = ordenEstados[(b['Estado'] || '').toUpperCase()] || 99;
-                    return ordenA - ordenB;
-                });
+                // 3. Mostrar "ENTREGADO"
+                if (estadoActual === 'ENTREGADO') {
+                    historialGenerado.push({
+                        'Estado': 'ENTREGADO',
+                        'Fecha': 'Registrado recientemente',
+                        'Observaciones': 'El paquete ha llegado exitosamente a su destino en ' + (entrega['Departamento destino'] || 'la ciudad de entrega') + '.'
+                    });
+                }
 
-                renderDetalle(entrega, historial);
-                actualizarHoraIndicador('indicador-actualizacion-detalle');
+                renderHistorial(historialGenerado);
+
+                document.getElementById('indicador-actualizacion-detalle').innerText = `Actualizado: ${new Date().toLocaleTimeString('es-ES')}`;
                 document.getElementById('detalle-entrega').classList.remove('hidden');
-
-            } catch (error) {
-                if(!esSilencioso) mostrarError(`Error de red: ${error.message}`);
-                console.error(error);
+            } catch (e) {
+                if(!esSilencioso) mostrarError("Error de red");
             } finally {
                 if(!esSilencioso) mostrarCarga(false);
             }
         }
 
-        function renderDetalle(entrega, historial) {
-            document.getElementById('lbl-entrega').innerText = entrega['Entrega'];
-            
-            const estadoActual = (entrega['Estado actual'] || 'DESCONOCIDO').toUpperCase();
-            document.getElementById('val-estado').innerText = estadoActual;
-            document.getElementById('val-fecha-est').innerText = entrega['Fecha estimada a entregar'] || '-';
-            
-            document.getElementById('val-departamento').innerText = (entrega['Departamento destino'] || '-').toUpperCase();
+        function actualizarStepper(est) {
+            const steps = { prep: document.getElementById('step-preparando'), desp: document.getElementById('step-despachado'), ent: document.getElementById('step-entregado') };
+            const prog = document.getElementById('stepper-progress');
+            Object.values(steps).forEach(s => s.className = "w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl");
+            steps.prep.innerHTML = '<i class="fas fa-box-open text-base"></i>'; steps.desp.innerHTML = '<i class="fas fa-truck text-base"></i>'; steps.ent.innerHTML = '<i class="fas fa-check-double text-base"></i>';
 
-            // Llenar Información Logística
-            document.getElementById('val-sucursal').innerText = entrega['Sucursal'] || '-';
-            document.getElementById('val-muelle').innerText = entrega['Muelle'] || '-';
-            document.getElementById('val-transporte').innerText = entrega['Transporte'] || '-';
-            document.getElementById('val-transportista').innerText = entrega['Transportista'] || '-';
-            document.getElementById('val-material').innerText = entrega['TIPO DE MATERIAL'] || entrega['Tipo de material'] || entrega['Tipo de Material'] || '-';
-
-            // Configurar Colores y Parpadeo de la tarjeta de estado
-            const iconoEstado = document.getElementById('icono-estado');
-            iconoEstado.className = "w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md"; 
-            
-            let colorClase = 'bg-gray-500';
-            let iconoClase = 'fa-info';
-            
-            if (estadoActual === 'PREPARANDO') {
-                colorClase = 'bg-blue-500 blink-preparando';
-                iconoClase = 'fa-box-open';
-            } else if (estadoActual === 'DESPACHADO' || estadoActual === 'EN TRANSITO') {
-                colorClase = 'bg-orange-500 blink-despachado';
-                iconoClase = 'fa-truck';
-            } else if (estadoActual === 'ENTREGADO') {
-                colorClase = 'bg-green-500'; // SIN PARPADEO
-                iconoClase = 'fa-check-double';
-            } else if (estadoActual === 'CANCELADO' || estadoActual === 'DEVUELTO') {
-                colorClase = 'bg-red-500';
-                iconoClase = 'fa-times';
-            }
-
-            iconoEstado.classList.add(...colorClase.split(' '));
-            iconoEstado.innerHTML = `<i class="fas ${iconoClase}"></i>`;
-
-            actualizarStepper(estadoActual);
-            renderHistorial(historial);
-        }
-
-        function actualizarStepper(estadoActual) {
-            const steps = {
-                'preparando': document.getElementById('step-preparando'),
-                'despachado': document.getElementById('step-despachado'),
-                'entregado': document.getElementById('step-entregado')
-            };
-            const progress = document.getElementById('stepper-progress');
-
-            // 1. Limpieza total y forzada
-            steps['preparando'].className = "w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl transition-all duration-300";
-            steps['preparando'].innerHTML = '<i class="fas fa-box-open text-base"></i>';
-
-            steps['despachado'].className = "w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl transition-all duration-300";
-            steps['despachado'].innerHTML = '<i class="fas fa-truck text-base"></i>';
-
-            steps['entregado'].className = "w-12 h-12 rounded-full border-4 border-gray-300 bg-white flex items-center justify-center text-gray-400 font-bold text-xl transition-all duration-300";
-            steps['entregado'].innerHTML = '<i class="fas fa-check-double text-base"></i>';
-
-            // 2. Lógica de llenado de progreso
-            if (estadoActual === 'PREPARANDO') {
-                progress.style.width = '0%';
-                progress.className = "absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-blue-500 z-0 transition-all duration-500";
-                
-                steps['preparando'].className = "w-14 h-14 rounded-full border-4 border-blue-200 bg-blue-500 flex items-center justify-center text-white font-bold text-2xl blink-preparando z-10 shadow-lg";
-            
-            } else if (estadoActual === 'DESPACHADO' || estadoActual === 'EN TRANSITO') {
-                progress.style.width = '50%';
-                progress.className = "absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-blue-500 z-0 transition-all duration-500";
-                
-                // Preparando completado
-                steps['preparando'].className = "w-12 h-12 rounded-full border-4 border-blue-500 bg-blue-500 flex items-center justify-center text-white font-bold text-xl z-10";
-                steps['preparando'].innerHTML = '<i class="fas fa-check"></i>';
-                
-                // Despachado actual
-                steps['despachado'].className = "w-14 h-14 rounded-full border-4 border-orange-200 bg-orange-500 flex items-center justify-center text-white font-bold text-2xl blink-despachado z-10 shadow-lg";
-            
-            } else if (estadoActual === 'ENTREGADO') {
-                progress.style.width = '100%';
-                progress.className = "absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-green-500 z-0 transition-all duration-500";
-                
-                // Preparando completado (Azul)
-                steps['preparando'].className = "w-12 h-12 rounded-full border-4 border-blue-500 bg-blue-500 flex items-center justify-center text-white font-bold text-xl z-10";
-                steps['preparando'].innerHTML = '<i class="fas fa-check"></i>';
-
-                // Despachado completado (Naranja)
-                steps['despachado'].className = "w-12 h-12 rounded-full border-4 border-orange-500 bg-orange-500 flex items-center justify-center text-white font-bold text-xl z-10";
-                steps['despachado'].innerHTML = '<i class="fas fa-check"></i>';
-                
-                // Entregado actual (Verde) - Sin parpadeo
-                steps['entregado'].className = "w-14 h-14 rounded-full border-4 border-green-200 bg-green-500 flex items-center justify-center text-white font-bold text-2xl z-10 shadow-lg";
-                steps['entregado'].innerHTML = '<i class="fas fa-check"></i>';
+            if (est === 'PREPARANDO') {
+                prog.style.width = '0%';
+                steps.prep.className = "w-14 h-14 rounded-full border-4 border-blue-200 bg-blue-500 flex items-center justify-center text-white text-2xl blink-preparando z-10 shadow-lg";
+            } else if (est === 'DESPACHADO' || est === 'EN TRANSITO') {
+                prog.style.width = '50%';
+                steps.prep.className = "w-12 h-12 rounded-full border-4 border-blue-500 bg-blue-500 text-white z-10"; steps.prep.innerHTML = '<i class="fas fa-check"></i>';
+                steps.desp.className = "w-14 h-14 rounded-full border-4 border-orange-200 bg-orange-500 flex items-center justify-center text-white text-2xl blink-despachado z-10 shadow-lg";
+            } else if (est === 'ENTREGADO') {
+                prog.style.width = '100%';
+                steps.prep.className = "w-12 h-12 rounded-full border-4 border-blue-500 bg-blue-500 text-white z-10"; steps.prep.innerHTML = '<i class="fas fa-check"></i>';
+                steps.desp.className = "w-12 h-12 rounded-full border-4 border-orange-500 bg-orange-500 text-white z-10"; steps.desp.innerHTML = '<i class="fas fa-check"></i>';
+                steps.ent.className = "w-14 h-14 rounded-full border-4 border-green-200 bg-green-500 flex items-center justify-center text-white text-2xl z-10 shadow-lg"; steps.ent.innerHTML = '<i class="fas fa-check"></i>';
             }
         }
 
         function renderHistorial(historial) {
             const container = document.getElementById('timeline-historial');
             container.innerHTML = '';
-
-            if (historial.length === 0) {
-                container.innerHTML = '<p class="text-sm text-gray-500 italic pl-4">No hay registros de historial para esta entrega.</p>';
-                return;
-            }
-
-            historial.forEach((mov, index) => {
-                const estado = (mov['Estado'] || 'Registro').toUpperCase();
-                let icon = 'fa-circle';
-                let colorDot = 'text-gray-300';
-                
-                if(estado === 'PREPARANDO') { icon = 'fa-box'; colorDot = 'text-blue-500'; }
-                if(estado === 'DESPACHADO') { icon = 'fa-truck-fast'; colorDot = 'text-orange-500'; }
-                if(estado === 'ENTREGADO') { icon = 'fa-check-circle'; colorDot = 'text-green-500'; }
-
-                let obs = mov['Observaciones'];
-                if (!obs || obs.trim() === '') {
-                    obs = `La Entrega ha sido registrada como ${estado}.`;
-                }
-
-                const esUltimo = index === historial.length - 1;
+            if (historial.length === 0) return;
+            historial.forEach((mov, idx) => {
+                const est = (mov['Estado'] || 'Registro').toUpperCase();
+                let icon = 'fa-circle'; let color = 'text-gray-300';
+                if(est === 'PREPARANDO') { icon = 'fa-box'; color = 'text-blue-500'; }
+                if(est === 'DESPACHADO') { icon = 'fa-truck-fast'; color = 'text-orange-500'; }
+                if(est === 'ENTREGADO') { icon = 'fa-check-circle'; color = 'text-green-500'; }
                 
                 const div = document.createElement('div');
                 div.className = "relative pl-8";
                 div.innerHTML = `
-                    <div class="absolute -left-3.5 top-1 bg-white rounded-full p-1">
-                        <i class="fas ${icon} ${colorDot} text-xl bg-white"></i>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 ${esUltimo ? 'shadow-sm border-l-4 border-l-blue-500' : ''}">
-                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">
-                            <h4 class="font-bold text-gray-800">${estado}</h4>
-                            <span class="text-xs font-semibold text-gray-500 bg-white px-2 py-1 rounded border">${mov['Fecha'] || ''}</span>
+                    <div class="absolute -left-3.5 top-1 bg-white rounded-full p-1"><i class="fas ${icon} ${color} text-xl"></i></div>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 ${idx === historial.length -1 ? 'shadow-sm border-l-4 border-l-blue-500' : ''}">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-bold">${est}</h4>
+                            <span class="text-xs font-semibold text-gray-500 bg-white px-2 py-1 border rounded shadow-sm">${mov['Fecha']||''}</span>
                         </div>
-                        <p class="text-sm text-gray-600 mb-2">${obs}</p>
-                        ${mov['Destino'] ? `<div class="text-xs text-gray-500 font-medium"><i class="fas fa-location-arrow mr-1"></i> Destino: ${(mov['Destino']).toUpperCase()}</div>` : ''}
-                    </div>
-                `;
+                        <p class="text-sm text-gray-600">${mov['Observaciones']}</p>
+                    </div>`;
                 container.appendChild(div);
             });
+        }
+
+        async function guardarActualizacion() {
+            const numeroEntrega = document.getElementById('lbl-entrega').innerText;
+            if (!numeroEntrega) return;
+
+            const estado = document.getElementById('update-estado').value;
+            const guia = document.getElementById('update-guia').value;
+            const traspaso = document.getElementById('update-traspaso').value;
+
+            const btn = document.getElementById('btn-actualizar');
+            const txt = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...'; btn.disabled = true;
+
+            const fd = new URLSearchParams();
+            fd.append('action', 'update'); fd.append('entrega', numeroEntrega); fd.append('estado', estado); fd.append('guia', guia); fd.append('traspaso', traspaso);
+
+            try {
+                const res = await fetch(CONFIG.WEB_APP_URL, { method: 'POST', body: fd });
+                const json = await res.json();
+                if (json.status === 'success') {
+                    alert('✅ Actualización exitosa en Google Sheets.');
+                    buscarEntrega(numeroEntrega, false); // Refresca los datos y regenera el historial
+                } else alert('⚠️ ' + json.message);
+            } catch (e) { alert('❌ Error al guardar.'); } 
+            finally { btn.innerHTML = txt; btn.disabled = false; }
         }
     </script>
 </body>
