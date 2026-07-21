@@ -22,7 +22,6 @@
             <h1 class="text-3xl font-bold tracking-tight">SEGUIMIENTO DE ENTREGAS WMS</h1>
             <p class="text-slate-300 mt-2 text-sm">Control y Rastreo de Entregas Logísticas en Tiempo Real</p>
             
-            <!-- BOTÓN SECRETO PARA ACTIVAR MODO EDICIÓN -->
             <button onclick="toggleAdmin()" class="absolute right-4 top-4 text-slate-600 hover:text-slate-300 transition text-xl" title="Acceso a Operadores">
                 <i class="fas fa-lock" id="icono-admin"></i>
             </button>
@@ -50,26 +49,35 @@
                 </div>
             </div>
 
+            <!-- Panel Búsqueda Avanzada -->
             <div id="panel-avanzada" class="hidden space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Preparación</label>
-                        <input type="date" id="filtro-fecha" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                        <input type="date" id="filtro-fecha" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                        <select id="filtro-estado" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="">Todos los estados</option>
+                        <select id="filtro-estado" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">Todos</option>
                             <option value="PREPARANDO">PREPARANDO</option>
                             <option value="DESPACHADO">DESPACHADO</option>
                             <option value="ENTREGADO">ENTREGADO</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Departamento Destino</label>
-                        <select id="filtro-departamento" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="">Cargando departamentos...</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
+                        <select id="filtro-departamento" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">Cargando...</option>
                         </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">N° Guía</label>
+                        <input type="text" id="filtro-guia" placeholder="Ej. 4552" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">N° Traspaso</label>
+                        <input type="text" id="filtro-traspaso" placeholder="Ej. 5535363" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                 </div>
                 <button onclick="ejecutarBusquedaAvanzada()" class="w-full mt-4 bg-slate-700 hover:bg-slate-800 text-white px-8 py-3 rounded-lg font-medium transition flex items-center justify-center gap-2">
@@ -78,14 +86,12 @@
             </div>
         </div>
 
-        <!-- Carga y Error -->
         <div id="loading" class="hidden text-center py-10">
             <i class="fas fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
             <p class="text-gray-500">Buscando información de entrega...</p>
         </div>
         <div id="error-msg" class="hidden bg-red-100 text-red-700 p-4 rounded-lg mb-6 border border-red-200"></div>
 
-        <!-- Resultados: Lista Avanzada -->
         <div id="lista-resultados" class="hidden bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
             <div class="p-4 bg-slate-50 border-b border-gray-200 font-medium text-gray-700 flex justify-between items-center">
                 <span>Resultados Encontrados</span>
@@ -106,14 +112,13 @@
             </div>
         </div>
 
-        <!-- Resultados: Detalle -->
         <div id="detalle-entrega" class="hidden">
             <div class="flex justify-between items-end mb-4">
                 <h2 class="text-2xl font-bold text-slate-800">Detalles de Entrega: <span id="lbl-entrega" class="text-blue-600"></span></h2>
                 <span id="indicador-actualizacion-detalle" class="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded"></span>
             </div>
             
-            <!-- Stepper -->
+            <!-- Stepper (Línea de tiempo) -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-6">
                 <div class="relative flex justify-between items-center w-full max-w-3xl mx-auto">
                     <div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-200 z-0"></div>
@@ -134,7 +139,7 @@
                 </div>
             </div>
 
-            <!-- PANEL DE EDICIÓN OCULTO POR DEFECTO PARA USUARIOS NORMALES -->
+            <!-- PANEL DE EDICIÓN -->
             <div id="panel-edicion" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6 shadow-sm">
                 <h3 class="font-bold text-blue-800 mb-4 flex items-center"><i class="fas fa-edit mr-2"></i> Panel de Operador: Actualizar Entrega</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -162,7 +167,6 @@
                 </div>
             </div>
 
-            <!-- Tarjetas Resumen -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
                     <div id="icono-estado" class="w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl font-bold bg-gray-400"><i class="fas fa-info"></i></div>
@@ -188,7 +192,6 @@
                 </div>
             </div>
 
-            <!-- Información Logística -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
                     <h3 class="font-bold text-gray-700"><i class="fas fa-clipboard-list mr-2"></i>Información Logística</h3>
@@ -225,7 +228,6 @@
                 </div>
             </div>
 
-            <!-- Historial Autogenerado -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
                     <h3 class="font-bold text-gray-700"><i class="fas fa-history mr-2"></i>Historial de Movimientos</h3>
@@ -236,23 +238,20 @@
     </main>
 
     <script>
-        // CONFIGURACIÓN
+        // AQUÍ ESTÁ TU NUEVA URL CONFIGURADA
         const CONFIG = {
-            WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzT_YjqNe4KB4ED-TSS4PHbL4miV5tVqJBK-ZD6_lsxzkeQQDQMDh5yI__JflO8GrKb/exec',
+            WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbynKQZnhgO_HoTyaDgoGeTCq8ZoXwMXOKR5NV5Q_PVpjrv5jR0iG12-jCiKyiZMwBaD/exec',
             GID_ENTREGAS: '0' 
-            // Ya no necesitamos GID_HISTORIAL porque lo generaremos automáticamente
         };
 
         let autoRefreshTimer = null;
         let busquedaActual = { tipo: null, parametro: null };
         let modoAdmin = false;
 
-        // Función para activar/desactivar panel de operarios
         function toggleAdmin() {
             modoAdmin = !modoAdmin;
             const panel = document.getElementById('panel-edicion');
             const icono = document.getElementById('icono-admin');
-            
             if (modoAdmin) {
                 panel.classList.remove('hidden');
                 icono.classList.remove('fa-lock');
@@ -264,16 +263,12 @@
             }
         }
 
-        // Formateador de fechas para que se vean bonitas
         function formatearFechaElegante(cadenaFecha) {
             if (!cadenaFecha) return 'Sin fecha registrada';
             try {
                 const fecha = new Date(cadenaFecha);
-                return fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) + 
-                       ' - ' + fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-            } catch(e) {
-                return cadenaFecha;
-            }
+                return fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) + ' - ' + fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            } catch(e) { return cadenaFecha; }
         }
 
         async function fetchSheetData(gid) {
@@ -333,6 +328,8 @@
             const fecha = document.getElementById('filtro-fecha').value;
             const estado = document.getElementById('filtro-estado').value;
             const depto = document.getElementById('filtro-departamento').value;
+            const guia = document.getElementById('filtro-guia').value.trim().toLowerCase();
+            const traspaso = document.getElementById('filtro-traspaso').value.trim().toLowerCase();
 
             if(!esSilencioso) { mostrarCarga(true); document.getElementById('detalle-entrega').classList.add('hidden'); }
             
@@ -351,10 +348,16 @@
                     }
                     const cumpleEst = estado === "" || (row['Estado actual']||'').toUpperCase() === estado.toUpperCase();
                     const cumpleDep = depto === "" || (row['Departamento destino']||'').toUpperCase() === depto.toUpperCase();
-                    return cumpleF && cumpleEst && cumpleDep;
+                    
+                    const vGuia = (row['N° Guia'] || '').toString().toLowerCase();
+                    const vTraspaso = (row['N° Traspaso'] || '').toString().toLowerCase();
+                    const cumpleGuia = guia === "" || vGuia.includes(guia);
+                    const cumpleTraspaso = traspaso === "" || vTraspaso.includes(traspaso);
+
+                    return cumpleF && cumpleEst && cumpleDep && cumpleGuia && cumpleTraspaso;
                 });
 
-                if (resultados.length === 0) { if(!esSilencioso) mostrarError("No hay resultados."); return; }
+                if (resultados.length === 0) { if(!esSilencioso) mostrarError("No hay resultados con estos filtros."); return; }
                 
                 const tbody = document.getElementById('tabla-resultados-body');
                 tbody.innerHTML = '';
@@ -379,7 +382,7 @@
                 });
                 document.getElementById('lista-resultados').classList.remove('hidden');
             } catch (e) {
-                if(!esSilencioso) mostrarError("Error en filtros");
+                if(!esSilencioso) mostrarError("Error al filtrar.");
             } finally {
                 if(!esSilencioso) mostrarCarga(false);
             }
@@ -407,12 +410,10 @@
                 document.getElementById('val-transportista').innerText = entrega['Transportista'] || '-';
                 document.getElementById('val-material').innerText = entrega['Tipo de Material'] || '-';
 
-                // Llenar inputs de edición (Solo visibles si se presiona el candado)
                 document.getElementById('update-estado').value = ['PREPARANDO','DESPACHADO','ENTREGADO'].includes(estadoActual) ? estadoActual : 'PREPARANDO';
                 document.getElementById('update-guia').value = entrega['N° Guia'] || '';
                 document.getElementById('update-traspaso').value = entrega['N° Traspaso'] || '';
 
-                // UI Iconos y Stepper
                 const iconoEstado = document.getElementById('icono-estado');
                 let colorClase = 'bg-gray-500'; let iconoClase = 'fa-info';
                 if (estadoActual === 'PREPARANDO') { colorClase = 'bg-blue-500 blink-preparando'; iconoClase = 'fa-box-open'; } 
@@ -424,38 +425,16 @@
 
                 actualizarStepper(estadoActual);
 
-                // ==========================================
-                // GENERACIÓN AUTOMÁTICA DEL HISTORIAL
-                // ==========================================
                 let historialGenerado = [];
-                
-                // 1. Siempre mostrar "PREPARANDO" si hay fecha o si el estado ya avanzó
                 if (entrega['Fecha preparado'] || estadoActual === 'PREPARANDO' || estadoActual === 'DESPACHADO' || estadoActual === 'ENTREGADO') {
-                    historialGenerado.push({
-                        'Estado': 'PREPARANDO',
-                        'Fecha': formatearFechaElegante(entrega['Fecha preparado']),
-                        'Observaciones': 'El paquete se encuentra en proceso de preparación en: ' + (entrega['Sucursal'] || 'Almacén')
-                    });
+                    historialGenerado.push({'Estado': 'PREPARANDO', 'Fecha': formatearFechaElegante(entrega['Fecha preparado']), 'Observaciones': 'El paquete se encuentra en proceso de preparación en: ' + (entrega['Sucursal'] || 'Almacén')});
                 }
-
-                // 2. Mostrar "DESPACHADO"
                 if (entrega['Fecha Despachado'] || estadoActual === 'DESPACHADO' || estadoActual === 'ENTREGADO') {
-                    historialGenerado.push({
-                        'Estado': 'DESPACHADO',
-                        'Fecha': formatearFechaElegante(entrega['Fecha Despachado']),
-                        'Observaciones': 'El pedido fue despachado y entregado al transportista: ' + (entrega['Transportista'] || 'Asignado')
-                    });
+                    historialGenerado.push({'Estado': 'DESPACHADO', 'Fecha': formatearFechaElegante(entrega['Fecha Despachado']), 'Observaciones': 'El pedido fue despachado y entregado al transportista: ' + (entrega['Transportista'] || 'Asignado')});
                 }
-
-                // 3. Mostrar "ENTREGADO"
                 if (estadoActual === 'ENTREGADO') {
-                    historialGenerado.push({
-                        'Estado': 'ENTREGADO',
-                        'Fecha': 'Registrado recientemente',
-                        'Observaciones': 'El paquete ha llegado exitosamente a su destino en ' + (entrega['Departamento destino'] || 'la ciudad de entrega') + '.'
-                    });
+                    historialGenerado.push({'Estado': 'ENTREGADO', 'Fecha': 'Registrado recientemente', 'Observaciones': 'El paquete ha llegado exitosamente a su destino en ' + (entrega['Departamento destino'] || 'la ciudad de entrega') + '.'});
                 }
-
                 renderHistorial(historialGenerado);
 
                 document.getElementById('indicador-actualizacion-detalle').innerText = `Actualizado: ${new Date().toLocaleTimeString('es-ES')}`;
@@ -467,6 +446,7 @@
             }
         }
 
+        // Stepper UI
         function actualizarStepper(est) {
             const steps = { prep: document.getElementById('step-preparando'), desp: document.getElementById('step-despachado'), ent: document.getElementById('step-entregado') };
             const prog = document.getElementById('stepper-progress');
@@ -478,12 +458,12 @@
                 steps.prep.className = "w-14 h-14 rounded-full border-4 border-blue-200 bg-blue-500 flex items-center justify-center text-white text-2xl blink-preparando z-10 shadow-lg";
             } else if (est === 'DESPACHADO' || est === 'EN TRANSITO') {
                 prog.style.width = '50%';
-                steps.prep.className = "w-12 h-12 rounded-full border-4 border-blue-500 bg-blue-500 text-white z-10"; steps.prep.innerHTML = '<i class="fas fa-check"></i>';
+                steps.prep.className = "w-12 h-12 rounded-full border-4 border-blue-500 bg-blue-500 flex items-center justify-center text-white z-10"; steps.prep.innerHTML = '<i class="fas fa-check"></i>';
                 steps.desp.className = "w-14 h-14 rounded-full border-4 border-orange-200 bg-orange-500 flex items-center justify-center text-white text-2xl blink-despachado z-10 shadow-lg";
             } else if (est === 'ENTREGADO') {
                 prog.style.width = '100%';
-                steps.prep.className = "w-12 h-12 rounded-full border-4 border-blue-500 bg-blue-500 text-white z-10"; steps.prep.innerHTML = '<i class="fas fa-check"></i>';
-                steps.desp.className = "w-12 h-12 rounded-full border-4 border-orange-500 bg-orange-500 text-white z-10"; steps.desp.innerHTML = '<i class="fas fa-check"></i>';
+                steps.prep.className = "w-12 h-12 rounded-full border-4 border-blue-500 bg-blue-500 flex items-center justify-center text-white z-10"; steps.prep.innerHTML = '<i class="fas fa-check"></i>';
+                steps.desp.className = "w-12 h-12 rounded-full border-4 border-orange-500 bg-orange-500 flex items-center justify-center text-white z-10"; steps.desp.innerHTML = '<i class="fas fa-check"></i>';
                 steps.ent.className = "w-14 h-14 rounded-full border-4 border-green-200 bg-green-500 flex items-center justify-center text-white text-2xl z-10 shadow-lg"; steps.ent.innerHTML = '<i class="fas fa-check"></i>';
             }
         }
@@ -526,18 +506,27 @@
             const txt = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...'; btn.disabled = true;
 
-            const fd = new URLSearchParams();
-            fd.append('action', 'update'); fd.append('entrega', numeroEntrega); fd.append('estado', estado); fd.append('guia', guia); fd.append('traspaso', traspaso);
+            const payload = JSON.stringify({ action: 'update', entrega: numeroEntrega, estado: estado, guia: guia, traspaso: traspaso });
 
             try {
-                const res = await fetch(CONFIG.WEB_APP_URL, { method: 'POST', body: fd });
+                const res = await fetch(CONFIG.WEB_APP_URL, { 
+                    method: 'POST', 
+                    body: payload,
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
                 const json = await res.json();
                 if (json.status === 'success') {
                     alert('✅ Actualización exitosa en Google Sheets.');
-                    buscarEntrega(numeroEntrega, false); // Refresca los datos y regenera el historial
-                } else alert('⚠️ ' + json.message);
-            } catch (e) { alert('❌ Error al guardar.'); } 
-            finally { btn.innerHTML = txt; btn.disabled = false; }
+                    buscarEntrega(numeroEntrega, false); 
+                } else {
+                    alert('⚠️ El servidor devolvió un error: ' + json.message);
+                }
+            } catch (e) { 
+                alert('❌ Error de conexión. Revisa que el script de Google esté implementado para "Cualquier persona". Detalle: ' + e.message); 
+                console.error(e);
+            } finally { 
+                btn.innerHTML = txt; btn.disabled = false; 
+            }
         }
     </script>
 </body>
