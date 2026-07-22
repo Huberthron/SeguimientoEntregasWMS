@@ -303,10 +303,10 @@
             document.getElementById('panel-' + tab).classList.remove('hidden');
         }
 
-        // NUEVA FUNCIÓN PARA VOLVER ATRÁS
+        // LÓGICA DE REGRESO MEJORADA
         function volverAtras() {
             document.getElementById('detalle-entrega').classList.add('hidden');
-            // Solo mostramos la lista de resultados si el usuario venía de la búsqueda avanzada
+            // Muestra la lista solo si venimos de la búsqueda avanzada
             if (busquedaActual.tipo === 'avanzada') {
                 document.getElementById('lista-resultados').classList.remove('hidden');
             }
@@ -327,8 +327,18 @@
         function iniciarAutoRefresh() {
             if(autoRefreshTimer) clearInterval(autoRefreshTimer);
             autoRefreshTimer = setInterval(() => {
-                if(busquedaActual.tipo === 'directa') buscarEntrega(busquedaActual.parametro, true); 
-                else if(busquedaActual.tipo === 'avanzada') ejecutarBusquedaAvanzada(true);
+                if(busquedaActual.tipo === 'directa') {
+                    buscarEntrega(busquedaActual.parametro, true); 
+                }
+                else if(busquedaActual.tipo === 'avanzada') {
+                    ejecutarBusquedaAvanzada(true);
+                    
+                    // PLUS: Actualizar silenciosamente el panel de detalles si el usuario lo está viendo
+                    if (!document.getElementById('detalle-entrega').classList.contains('hidden')) {
+                        const entregaViendo = document.getElementById('lbl-entrega').innerText;
+                        if (entregaViendo) buscarEntrega(entregaViendo, true);
+                    }
+                }
             }, 30000);
         }
 
@@ -347,7 +357,13 @@
             const guia = document.getElementById('filtro-guia').value.trim().toLowerCase();
             const traspaso = document.getElementById('filtro-traspaso').value.trim().toLowerCase();
 
-            if(!esSilencioso) { mostrarCarga(true); document.getElementById('detalle-entrega').classList.add('hidden'); }
+            // GUARDAMOS EL ESTADO DE LA BÚSQUEDA AVANZADA
+            if(!esSilencioso) { 
+                busquedaActual = { tipo: 'avanzada', parametro: null };
+                mostrarCarga(true); 
+                document.getElementById('detalle-entrega').classList.add('hidden'); 
+                iniciarAutoRefresh();
+            }
             
             try {
                 const entregas = await fetchSheetData(CONFIG.GID_ENTREGAS);
@@ -386,7 +402,11 @@
 
                     const tr = document.createElement('tr');
                     tr.className = "border-b hover:bg-blue-50 cursor-pointer";
-                    tr.onclick = () => { document.getElementById('input-entrega').value = r['Entrega']; ejecutarBusquedaDirecta(); };
+                    // EN LUGAR DE SOBRESCRIBIR LA BÚSQUEDA DIRECTA, SIMPLEMENTE CARGAMOS LOS DETALLES:
+                    tr.onclick = () => { 
+                        document.getElementById('input-entrega').value = r['Entrega']; 
+                        buscarEntrega(r['Entrega'], false); 
+                    };
                     tr.innerHTML = `
                         <td class="p-4 font-medium">${r['Entrega']}</td>
                         <td class="p-4 text-sm text-gray-600">${r['N° Guia'] || '-'}</td>
@@ -398,7 +418,12 @@
                     `;
                     tbody.appendChild(tr);
                 });
-                document.getElementById('lista-resultados').classList.remove('hidden');
+                
+                // Si el usuario no está viendo los detalles, mostrar la lista
+                if (document.getElementById('detalle-entrega').classList.contains('hidden')) {
+                    document.getElementById('lista-resultados').classList.remove('hidden');
+                }
+                
             } catch (e) {
                 if(!esSilencioso) mostrarError("Error al filtrar.");
             } finally {
