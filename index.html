@@ -238,7 +238,7 @@
     </main>
 
     <script>
-        // AQUÍ ESTÁ TU NUEVA URL CONFIGURADA
+        // LA URL HA SIDO ACTUALIZADA AQUÍ
         const CONFIG = {
             WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbynKQZnhgO_HoTyaDgoGeTCq8ZoXwMXOKR5NV5Q_PVpjrv5jR0iG12-jCiKyiZMwBaD/exec',
             GID_ENTREGAS: '0' 
@@ -342,7 +342,7 @@
                         const [y, m, d] = fecha.split('-');
                         const d1 = parseInt(d, 10).toString(); const m1 = parseInt(m, 10).toString();
                         const fmt = [`${d1}/${m1}/${y}`, `${d}/${m}/${y}`, `${d1}/${m}/${y}`, `${d}/${m1}/${y}`];
-                        const fPrep = (row['Fecha preparado'] || '').trim();
+                        const fPrep = (row['Fecha preparada'] || '').trim();
                         const fDesp = (row['Fecha Despachado'] || '').trim();
                         cumpleF = fmt.includes(fPrep) || fmt.includes(fDesp);
                     }
@@ -398,8 +398,10 @@
                 const estadoActual = (entrega['Estado actual'] || 'DESCONOCIDO').toUpperCase();
                 document.getElementById('lbl-entrega').innerText = entrega['Entrega'];
                 document.getElementById('val-estado').innerText = estadoActual;
-                document.getElementById('val-fecha-prep').innerText = entrega['Fecha preparado'] ? entrega['Fecha preparado'].split('T')[0] : '-';
+                
+                document.getElementById('val-fecha-prep').innerText = entrega['Fecha preparada'] ? entrega['Fecha preparada'].split('T')[0] : '-';
                 document.getElementById('val-fecha-desp').innerText = entrega['Fecha Despachado'] ? entrega['Fecha Despachado'].split('T')[0] : '-';
+                
                 document.getElementById('val-departamento').innerText = (entrega['Departamento destino'] || '-').toUpperCase();
                 
                 document.getElementById('val-guia').innerText = entrega['N° Guia'] || '-';
@@ -425,16 +427,33 @@
 
                 actualizarStepper(estadoActual);
 
+                let origen = entrega['Departamento Origen'] || 'Origen no especificado';
                 let historialGenerado = [];
-                if (entrega['Fecha preparado'] || estadoActual === 'PREPARANDO' || estadoActual === 'DESPACHADO' || estadoActual === 'ENTREGADO') {
-                    historialGenerado.push({'Estado': 'PREPARANDO', 'Fecha': formatearFechaElegante(entrega['Fecha preparado']), 'Observaciones': 'El paquete se encuentra en proceso de preparación en: ' + (entrega['Sucursal'] || 'Almacén')});
+                
+                if (entrega['Fecha preparada'] || estadoActual === 'PREPARANDO' || estadoActual === 'DESPACHADO' || estadoActual === 'ENTREGADO') {
+                    historialGenerado.push({
+                        'Estado': 'PREPARANDO', 
+                        'Fecha': formatearFechaElegante(entrega['Fecha preparada']), 
+                        'Observaciones': `El paquete se encuentra en proceso de preparación en: ${entrega['Sucursal'] || 'Almacén'} (Departamento Origen: ${origen}).`
+                    });
                 }
+                
                 if (entrega['Fecha Despachado'] || estadoActual === 'DESPACHADO' || estadoActual === 'ENTREGADO') {
-                    historialGenerado.push({'Estado': 'DESPACHADO', 'Fecha': formatearFechaElegante(entrega['Fecha Despachado']), 'Observaciones': 'El pedido fue despachado y entregado al transportista: ' + (entrega['Transportista'] || 'Asignado')});
+                    historialGenerado.push({
+                        'Estado': 'DESPACHADO', 
+                        'Fecha': formatearFechaElegante(entrega['Fecha Despachado']), 
+                        'Observaciones': `El pedido fue despachado desde ${origen} y entregado al transportista: ${entrega['Transportista'] || 'Asignado'}.`
+                    });
                 }
+                
                 if (estadoActual === 'ENTREGADO') {
-                    historialGenerado.push({'Estado': 'ENTREGADO', 'Fecha': 'Registrado recientemente', 'Observaciones': 'El paquete ha llegado exitosamente a su destino en ' + (entrega['Departamento destino'] || 'la ciudad de entrega') + '.'});
+                    historialGenerado.push({
+                        'Estado': 'ENTREGADO', 
+                        'Fecha': 'Registrado recientemente', 
+                        'Observaciones': `El paquete ha llegado exitosamente a su destino en ${entrega['Departamento destino'] || 'la ciudad de entrega'}.`
+                    });
                 }
+                
                 renderHistorial(historialGenerado);
 
                 document.getElementById('indicador-actualizacion-detalle').innerText = `Actualizado: ${new Date().toLocaleTimeString('es-ES')}`;
