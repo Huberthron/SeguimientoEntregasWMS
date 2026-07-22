@@ -115,8 +115,14 @@
         </div>
 
         <div id="detalle-entrega" class="hidden">
-            <div class="flex justify-between items-end mb-4">
-                <h2 class="text-2xl font-bold text-slate-800">Detalles de Entrega: <span id="lbl-entrega" class="text-blue-600"></span></h2>
+            <!-- HEADER DE DETALLES CON BOTÓN ATRÁS -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 gap-2">
+                <div class="flex items-center gap-3">
+                    <button onclick="volverAtras()" class="text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition bg-white border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm flex items-center gap-2 text-sm font-medium">
+                        <i class="fas fa-arrow-left"></i> Atrás
+                    </button>
+                    <h2 class="text-2xl font-bold text-slate-800">Entrega: <span id="lbl-entrega" class="text-blue-600"></span></h2>
+                </div>
                 <span id="indicador-actualizacion-detalle" class="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded"></span>
             </div>
             
@@ -295,6 +301,15 @@
             document.getElementById('tab-avanzada').className = "flex-1 py-3 text-center font-medium text-gray-500";
             document.getElementById('tab-' + tab).className = "flex-1 py-3 text-center font-medium text-blue-600 border-b-2 border-blue-600";
             document.getElementById('panel-' + tab).classList.remove('hidden');
+        }
+
+        // NUEVA FUNCIÓN PARA VOLVER ATRÁS
+        function volverAtras() {
+            document.getElementById('detalle-entrega').classList.add('hidden');
+            // Solo mostramos la lista de resultados si el usuario venía de la búsqueda avanzada
+            if (busquedaActual.tipo === 'avanzada') {
+                document.getElementById('lista-resultados').classList.remove('hidden');
+            }
         }
 
         function mostrarCarga(mostrar) {
